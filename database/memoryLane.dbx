@@ -1,0 +1,29 @@
+// -------------------------------------------------------------- //
+
+model scripture (
+    key pk
+    unique id
+
+    field pk                serial64
+    field created_at        timestamp ( autoinsert )
+    field id                text
+    field chapter           int64
+    field book              text
+    field verse_number      int64
+    field verse_text        text ( updatable )
+    field hint              text
+)
+
+create scripture()
+
+create scripture ( noreturn )
+
+read one (
+    select scripture
+    where scripture.id = ?
+)
+
+update scripture ( where scripture.id = ? )
+
+
+
