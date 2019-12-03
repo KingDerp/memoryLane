@@ -1,13 +1,12 @@
-//Makai is a doodle woodle!!!
 package main
 
 import (
 	"context"
 	"flag"
+	"net/http"
+
 	"memoryLane/database"
 	"memoryLane/handlers"
-	"net/http"
-	"os"
 
 	"github.com/sirupsen/logrus"
 	"github.com/zeebo/errs"
@@ -18,6 +17,10 @@ var (
 		"address",
 		":3000",
 		"the address MemoryLane binds to")
+	dbFlag = flag.String(
+		"db",
+		"postgres://memorylane:something_stupid@localhost/memorylane",
+		"the connection string to the desired database")
 )
 
 func main() {
@@ -25,34 +28,19 @@ func main() {
 
 	err := run(context.Background())
 	if err != nil {
-		logrus.Errorf("%+v\n", err)
-		os.Exit(1)
+		logrus.Fatalf("%+v\n", err)
 	}
-}
-
-type Verse struct {
-	VerseNumber int
-	Text        string
-}
-
-type Scripture struct {
-	Id      string
-	Chapter int
-	Verse   Verse
-	Book    string
-	Hint    string
 }
 
 func run(ctx context.Context) error {
 
-	db, err := database.Open("postgres",
-		"postgres://memorylane:something_stupid@localhost/memorylane")
+	db, err := database.Open("postgres", dbFlag)
 	if err != nil {
 		return err
 	}
 
 	handler := handlers.NewHandler(db)
 
-	logrus.Infof("server listening on address %s\n", *addressFlag)
+	logrus.WithField("address", *addressFlag).Info("server listening")
 	return errs.Wrap(http.ListenAndServe(*addressFlag, handler))
 }

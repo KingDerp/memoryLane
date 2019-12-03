@@ -2,11 +2,12 @@ package server
 
 import (
 	"context"
-	"fmt"
+
+	"memoryLane/common"
 	"memoryLane/database"
 
-	uuid "github.com/satori/go.uuid"
-	"github.com/zeebo/errs"
+	uuid "github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
 	"gopkg.in/spacemonkeygo/dbx.v1/prettyprint"
 )
 
@@ -26,9 +27,13 @@ type NewScriptureRequest struct {
 	Hint        string `json:"hint"`
 }
 
+type NewScriptureResponse struct {
+	Message string `json:"message"`
+}
+
 func (ss *ScriptureServer) NewScripture(ctx context.Context, req *NewScriptureRequest) (err error) {
 
-	fmt.Println("entered scripture server")
+	logrus.Info("entered scripture server")
 	prettyprint.Println(req)
 	err = ValidateScriptureRequest(req)
 	if err != nil {
@@ -53,7 +58,7 @@ func (ss *ScriptureServer) NewScripture(ctx context.Context, req *NewScriptureRe
 	})
 
 	if err != nil {
-		return err
+		return common.ServerError.Wrap(err)
 	}
 
 	return nil
@@ -61,23 +66,19 @@ func (ss *ScriptureServer) NewScripture(ctx context.Context, req *NewScriptureRe
 
 func ValidateScriptureRequest(sr *NewScriptureRequest) error {
 	if sr.Book == "" {
-		return errs.New("Book cannot be empty")
+		return common.ValidationError.New("book cannot be empty")
 	}
 
 	if sr.VerseNumber <= 0 {
-		return errs.New("Verse Number must be greater than 0")
+		return common.ValidationError.New("verseNumber must be greater than 0")
 	}
 
 	if sr.VerseText == "" {
-		return errs.New("Verse Text cannot be empty")
+		return common.ValidationError.New("verseText cannot be empty")
 	}
 
 	if sr.Chapter <= 0 {
-		return errs.New("Chapter must be greater than or equal to 0")
-	}
-
-	if sr.Hint == "" {
-		return errs.New("Hint cannot be empty")
+		return common.ValidationError.New("chapter must be greater than 0")
 	}
 
 	return nil

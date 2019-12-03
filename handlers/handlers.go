@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
+	"net/http"
+
+	"memoryLane/common"
 	"memoryLane/database"
 	"memoryLane/server"
-	"net/http"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
@@ -19,14 +21,8 @@ func NewHandler(db *database.DB) *Handler {
 
 	r := chi.NewRouter()
 
-	// Basic CORS
-	// for more ideas, see: https://developer.github.com/v3/#cross-origin-resource-sharing
 	cors := cors.New(cors.Options{
-		// AllowedOrigins: []string{"https://foo.com"}, // Use this to allow specific origin
-		// hosts
-		AllowedOrigins: []string{"*"}, //TODO(mac): before this roles out to prod this needs to include a config option which includes where this is publicly hosted
-		// AllowOriginFunc:  func(r *http.Request, origin string) bool { return true
-		// },
+		AllowedOrigins:   []string{"*"}, //TODO(mac): before this roles out to prod this needs to include a config option which includes where this is publicly hosted
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
@@ -59,15 +55,39 @@ func (ss *scriptureHandler) newScripture(w http.ResponseWriter, req *http.Reques
 	var newScriptureRequest server.NewScriptureRequest
 	err := decoder.Decode(&newScriptureRequest)
 	if err != nil {
-		logrus.Errorf("%+v", err)
-		http.Error(w, "unable to parse json", http.StatusInternalServerError)
+		logrus.Errorf("error decoding request: %+v", err)
+		http.Error(w, "unable to parse json", http.StatusBadRequest)
 		return
 	}
 
 	err = ss.scriptureServer.NewScripture(ctx, &newScriptureRequest)
+
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		if common.ServerError.Has(err) {
+			logrus.Errorf("server error: %+v", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if common.ValidationError.Has(err) {
+			logrus.Errorf("validation error: %+v", err)
+			http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+			return
+		}
 		logrus.Errorf("%+v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	b, err := json.Marshal(&server.NewScriptureResponse{
+		Message: "Scripture was succesfully received and stored",
+	})
+	if err != nil {
+		http.Error(w, "server error", http.StatusInternalServerError)
+		return
+	}
+
+	h := w.Header()
+	h.Set("Content-Type", "application/json")
+	w.Write(b)
 }

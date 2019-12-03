@@ -435,7 +435,11 @@ type Scripture struct {
 func (Scripture) _Table() string { return "scriptures" }
 
 type Scripture_Update_Fields struct {
-	VerseText Scripture_VerseText_Field
+	Chapter     Scripture_Chapter_Field
+	Book        Scripture_Book_Field
+	VerseNumber Scripture_VerseNumber_Field
+	VerseText   Scripture_VerseText_Field
+	Hint        Scripture_Hint_Field
 }
 
 type Scripture_Pk_Field struct {
@@ -846,9 +850,29 @@ func (obj *postgresImpl) Update_Scripture_By_Id(ctx context.Context,
 	var __values []interface{}
 	var __args []interface{}
 
+	if update.Chapter._set {
+		__values = append(__values, update.Chapter.value())
+		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("chapter = ?"))
+	}
+
+	if update.Book._set {
+		__values = append(__values, update.Book.value())
+		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("book = ?"))
+	}
+
+	if update.VerseNumber._set {
+		__values = append(__values, update.VerseNumber.value())
+		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("verse_number = ?"))
+	}
+
 	if update.VerseText._set {
 		__values = append(__values, update.VerseText.value())
 		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("verse_text = ?"))
+	}
+
+	if update.Hint._set {
+		__values = append(__values, update.Hint.value())
+		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("hint = ?"))
 	}
 
 	if len(__sets_sql.SQLs) == 0 {
@@ -1001,9 +1025,29 @@ func (obj *sqlite3Impl) Update_Scripture_By_Id(ctx context.Context,
 	var __values []interface{}
 	var __args []interface{}
 
+	if update.Chapter._set {
+		__values = append(__values, update.Chapter.value())
+		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("chapter = ?"))
+	}
+
+	if update.Book._set {
+		__values = append(__values, update.Book.value())
+		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("book = ?"))
+	}
+
+	if update.VerseNumber._set {
+		__values = append(__values, update.VerseNumber.value())
+		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("verse_number = ?"))
+	}
+
 	if update.VerseText._set {
 		__values = append(__values, update.VerseText.value())
 		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("verse_text = ?"))
+	}
+
+	if update.Hint._set {
+		__values = append(__values, update.Hint.value())
+		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("hint = ?"))
 	}
 
 	if len(__sets_sql.SQLs) == 0 {

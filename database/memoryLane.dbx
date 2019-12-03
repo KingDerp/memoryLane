@@ -7,11 +7,11 @@ model scripture (
     field pk                serial64
     field created_at        timestamp ( autoinsert )
     field id                text
-    field chapter           int64
-    field book              text
-    field verse_number      int64
+    field chapter           int64 ( updatable )
+    field book              text ( updatable )
+    field verse_number      int64 ( updatable )
     field verse_text        text ( updatable )
-    field hint              text
+    field hint              text ( updatable )
 )
 
 create scripture()
