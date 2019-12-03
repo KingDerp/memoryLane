@@ -5,8 +5,8 @@ import (
 	"flag"
 	"net/http"
 
-	"memoryLane/database"
-	"memoryLane/handlers"
+	"github.com/KingDerp/memoryLane/database"
+	"github.com/KingDerp/memoryLane/handlers"
 
 	"github.com/sirupsen/logrus"
 	"github.com/zeebo/errs"
@@ -34,7 +34,7 @@ func main() {
 
 func run(ctx context.Context) error {
 
-	db, err := database.Open("postgres", dbFlag)
+	db, err := database.Open("postgres", *dbFlag)
 	if err != nil {
 		return err
 	}

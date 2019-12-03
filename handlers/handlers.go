@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"memoryLane/common"
-	"memoryLane/database"
-	"memoryLane/server"
+	"github.com/KingDerp/memoryLane/common"
+	"github.com/KingDerp/memoryLane/database"
+	"github.com/KingDerp/memoryLane/server"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"

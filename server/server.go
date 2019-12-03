@@ -3,12 +3,11 @@ package server
 import (
 	"context"
 
-	"memoryLane/common"
-	"memoryLane/database"
+	"github.com/KingDerp/memoryLane/common"
+	"github.com/KingDerp/memoryLane/database"
 
 	uuid "github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"gopkg.in/spacemonkeygo/dbx.v1/prettyprint"
 )
 
 type ScriptureServer struct {
@@ -34,7 +33,6 @@ type NewScriptureResponse struct {
 func (ss *ScriptureServer) NewScripture(ctx context.Context, req *NewScriptureRequest) (err error) {
 
 	logrus.Info("entered scripture server")
-	prettyprint.Println(req)
 	err = ValidateScriptureRequest(req)
 	if err != nil {
 		return err
