@@ -1,29 +1,31 @@
 // -------------------------------------------------------------- //
 
-model scripture (
+model citation (
     key pk
     unique id
 
     field pk                serial64
     field created_at        timestamp ( autoinsert )
+    field mem_date          timestamp ( autoinsert, updatable )
     field id                text
-    field chapter           int64 ( updatable )
-    field book              text ( updatable )
-    field verse_number      int64 ( updatable )
-    field verse_text        text ( updatable )
-    field hint              text ( updatable )
+    field reference         text ( updatable, nullable )
+    field author            text ( updatable, nullable )
+    field text              text ( updatable, nullable )
+    field book              text ( updatable, nullable )
+    field hint              text ( updatable, nullable )
+    field year              int64 ( updatable, nullable )
 )
 
-create scripture()
+create citation()
 
-create scripture ( noreturn )
+create citation ( noreturn )
 
 read one (
-    select scripture
-    where scripture.id = ?
+    select citation
+    where citation.id = ?
 )
 
-update scripture ( where scripture.id = ? )
+update citation ( where citation.id = ? )
 
 
 

@@ -31,36 +31,36 @@ func NewHandler(db *database.DB) *Handler {
 	})
 	r.Use(cors.Handler)
 
-	ss := server.NewScriptureServer(db)
-	sh := newScriptureHandler(ss)
+	ss := server.NewCitationServer(db)
+	sh := newCitationHandler(ss)
 
-	r.Post("/api/scripture/new", http.HandlerFunc(sh.newScripture))
+	r.Post("/api/citation/new", http.HandlerFunc(sh.newCitation))
 
 	return &Handler{Handler: r}
 }
 
-type scriptureHandler struct {
-	scriptureServer *server.ScriptureServer
+type citationHandler struct {
+	citationServer *server.CitationServer
 }
 
-func newScriptureHandler(server *server.ScriptureServer) *scriptureHandler {
-	return &scriptureHandler{scriptureServer: server}
+func newCitationHandler(server *server.CitationServer) *citationHandler {
+	return &citationHandler{citationServer: server}
 }
 
-func (ss *scriptureHandler) newScripture(w http.ResponseWriter, req *http.Request) {
+func (ss *citationHandler) newCitation(w http.ResponseWriter, req *http.Request) {
 
 	ctx := req.Context()
 
 	decoder := json.NewDecoder(req.Body)
-	var newScriptureRequest server.NewScriptureRequest
-	err := decoder.Decode(&newScriptureRequest)
+	var newCitationRequest server.CitationRequest
+	err := decoder.Decode(&newCitationRequest)
 	if err != nil {
 		logrus.Errorf("error decoding request: %+v", err)
 		http.Error(w, "unable to parse json", http.StatusBadRequest)
 		return
 	}
 
-	err = ss.scriptureServer.NewScripture(ctx, &newScriptureRequest)
+	err = ss.citationServer.NewCitation(ctx, &newCitationRequest)
 
 	if err != nil {
 		if common.ServerError.Has(err) {
@@ -79,8 +79,8 @@ func (ss *scriptureHandler) newScripture(w http.ResponseWriter, req *http.Reques
 		return
 	}
 
-	b, err := json.Marshal(&server.NewScriptureResponse{
-		Message: "Scripture was succesfully received and stored",
+	b, err := json.Marshal(&server.NewCitationResponse{
+		Message: "citation was succesfully received and stored",
 	})
 	if err != nil {
 		http.Error(w, "server error", http.StatusInternalServerError)

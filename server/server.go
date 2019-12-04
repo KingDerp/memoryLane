@@ -10,30 +10,31 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type ScriptureServer struct {
+type CitationServer struct {
 	db *database.DB
 }
 
-func NewScriptureServer(db *database.DB) *ScriptureServer {
-	return &ScriptureServer{db: db}
+func NewCitationServer(db *database.DB) *CitationServer {
+	return &CitationServer{db: db}
 }
 
-type NewScriptureRequest struct {
-	Book        string `json:"book"`
-	VerseNumber int    `json:"verseNumber"`
-	VerseText   string `json:"verseText"`
-	Chapter     int    `json:"chapter"`
-	Hint        string `json:"hint"`
+type CitationRequest struct {
+	Reference string `json:"reference"` //helps to locate item within a book. Ex: page number etc.
+	Author    string `json:"author"`
+	Text      string `json:"text"`
+	Book      string `json:"book"`
+	Hint      string `json:"hint"`
+	Year      int64  `json:"year"`
 }
 
-type NewScriptureResponse struct {
+type NewCitationResponse struct {
 	Message string `json:"message"`
 }
 
-func (ss *ScriptureServer) NewScripture(ctx context.Context, req *NewScriptureRequest) (err error) {
+func (ss *CitationServer) NewCitation(ctx context.Context, req *CitationRequest) (err error) {
 
-	logrus.Info("entered scripture server")
-	err = ValidateScriptureRequest(req)
+	logrus.Info("entered citation server")
+	err = ValidateCitationRequest(req)
 	if err != nil {
 		return err
 	}
@@ -45,13 +46,16 @@ func (ss *ScriptureServer) NewScripture(ctx context.Context, req *NewScriptureRe
 
 	err = ss.db.WithTx(ctx, func(ctx context.Context, tx *database.Tx) error {
 
-		return tx.CreateNoReturn_Scripture(ctx,
-			database.Scripture_Id(newId.String()),
-			database.Scripture_Chapter(int64(req.Chapter)),
-			database.Scripture_Book(req.Book),
-			database.Scripture_VerseNumber(int64(req.VerseNumber)),
-			database.Scripture_VerseText(req.VerseText),
-			database.Scripture_Hint(req.Hint),
+		return tx.CreateNoReturn_Citation(ctx,
+			database.Citation_Id(newId.String()),
+			database.Citation_Create_Fields{
+				Reference: database.Citation_Reference(req.Reference),
+				Author:    database.Citation_Author(req.Author),
+				Text:      database.Citation_Text(req.Text),
+				Book:      database.Citation_Book(req.Book),
+				Hint:      database.Citation_Hint(req.Hint),
+				Year:      database.Citation_Year(req.Year),
+			},
 		)
 	})
 
@@ -62,21 +66,9 @@ func (ss *ScriptureServer) NewScripture(ctx context.Context, req *NewScriptureRe
 	return nil
 }
 
-func ValidateScriptureRequest(sr *NewScriptureRequest) error {
-	if sr.Book == "" {
-		return common.ValidationError.New("book cannot be empty")
-	}
-
-	if sr.VerseNumber <= 0 {
-		return common.ValidationError.New("verseNumber must be greater than 0")
-	}
-
-	if sr.VerseText == "" {
-		return common.ValidationError.New("verseText cannot be empty")
-	}
-
-	if sr.Chapter <= 0 {
-		return common.ValidationError.New("chapter must be greater than 0")
+func ValidateCitationRequest(c *CitationRequest) error {
+	if c.Text == "" {
+		return common.ValidationError.New("text cannot be empty. You must have something to memorize.")
 	}
 
 	return nil

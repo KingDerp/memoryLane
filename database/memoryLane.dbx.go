@@ -272,15 +272,17 @@ func newpostgres(db *DB) *postgresDB {
 }
 
 func (obj *postgresDB) Schema() string {
-	return `CREATE TABLE scriptures (
+	return `CREATE TABLE citations (
 	pk bigserial NOT NULL,
 	created_at timestamp with time zone NOT NULL,
+	mem_date timestamp with time zone NOT NULL,
 	id text NOT NULL,
-	chapter bigint NOT NULL,
-	book text NOT NULL,
-	verse_number bigint NOT NULL,
-	verse_text text NOT NULL,
-	hint text NOT NULL,
+	reference text,
+	author text,
+	text text,
+	book text,
+	hint text,
+	year bigint,
 	PRIMARY KEY ( pk ),
 	UNIQUE ( id )
 );`
@@ -347,15 +349,17 @@ func newsqlite3(db *DB) *sqlite3DB {
 }
 
 func (obj *sqlite3DB) Schema() string {
-	return `CREATE TABLE scriptures (
+	return `CREATE TABLE citations (
 	pk INTEGER NOT NULL,
 	created_at TIMESTAMP NOT NULL,
+	mem_date TIMESTAMP NOT NULL,
 	id TEXT NOT NULL,
-	chapter INTEGER NOT NULL,
-	book TEXT NOT NULL,
-	verse_number INTEGER NOT NULL,
-	verse_text TEXT NOT NULL,
-	hint TEXT NOT NULL,
+	reference TEXT,
+	author TEXT,
+	text TEXT,
+	book TEXT,
+	hint TEXT,
+	year INTEGER,
 	PRIMARY KEY ( pk ),
 	UNIQUE ( id )
 );`
@@ -421,170 +425,297 @@ nextval:
 	fmt.Fprint(f, "]")
 }
 
-type Scripture struct {
-	Pk          int64
-	CreatedAt   time.Time
-	Id          string
-	Chapter     int64
-	Book        string
-	VerseNumber int64
-	VerseText   string
-	Hint        string
+type Citation struct {
+	Pk        int64
+	CreatedAt time.Time
+	MemDate   time.Time
+	Id        string
+	Reference *string
+	Author    *string
+	Text      *string
+	Book      *string
+	Hint      *string
+	Year      *int64
 }
 
-func (Scripture) _Table() string { return "scriptures" }
+func (Citation) _Table() string { return "citations" }
 
-type Scripture_Update_Fields struct {
-	Chapter     Scripture_Chapter_Field
-	Book        Scripture_Book_Field
-	VerseNumber Scripture_VerseNumber_Field
-	VerseText   Scripture_VerseText_Field
-	Hint        Scripture_Hint_Field
+type Citation_Create_Fields struct {
+	Reference Citation_Reference_Field
+	Author    Citation_Author_Field
+	Text      Citation_Text_Field
+	Book      Citation_Book_Field
+	Hint      Citation_Hint_Field
+	Year      Citation_Year_Field
 }
 
-type Scripture_Pk_Field struct {
+type Citation_Update_Fields struct {
+	MemDate   Citation_MemDate_Field
+	Reference Citation_Reference_Field
+	Author    Citation_Author_Field
+	Text      Citation_Text_Field
+	Book      Citation_Book_Field
+	Hint      Citation_Hint_Field
+	Year      Citation_Year_Field
+}
+
+type Citation_Pk_Field struct {
 	_set   bool
 	_value int64
 }
 
-func Scripture_Pk(v int64) Scripture_Pk_Field {
-	return Scripture_Pk_Field{_set: true, _value: v}
+func Citation_Pk(v int64) Citation_Pk_Field {
+	return Citation_Pk_Field{_set: true, _value: v}
 }
 
-func (f Scripture_Pk_Field) value() interface{} {
+func (f Citation_Pk_Field) value() interface{} {
 	if !f._set {
 		return nil
 	}
 	return f._value
 }
 
-func (Scripture_Pk_Field) _Column() string { return "pk" }
+func (Citation_Pk_Field) _Column() string { return "pk" }
 
-type Scripture_CreatedAt_Field struct {
+type Citation_CreatedAt_Field struct {
 	_set   bool
 	_value time.Time
 }
 
-func Scripture_CreatedAt(v time.Time) Scripture_CreatedAt_Field {
-	return Scripture_CreatedAt_Field{_set: true, _value: v}
+func Citation_CreatedAt(v time.Time) Citation_CreatedAt_Field {
+	return Citation_CreatedAt_Field{_set: true, _value: v}
 }
 
-func (f Scripture_CreatedAt_Field) value() interface{} {
+func (f Citation_CreatedAt_Field) value() interface{} {
 	if !f._set {
 		return nil
 	}
 	return f._value
 }
 
-func (Scripture_CreatedAt_Field) _Column() string { return "created_at" }
+func (Citation_CreatedAt_Field) _Column() string { return "created_at" }
 
-type Scripture_Id_Field struct {
+type Citation_MemDate_Field struct {
+	_set   bool
+	_value time.Time
+}
+
+func Citation_MemDate(v time.Time) Citation_MemDate_Field {
+	return Citation_MemDate_Field{_set: true, _value: v}
+}
+
+func (f Citation_MemDate_Field) value() interface{} {
+	if !f._set {
+		return nil
+	}
+	return f._value
+}
+
+func (Citation_MemDate_Field) _Column() string { return "mem_date" }
+
+type Citation_Id_Field struct {
 	_set   bool
 	_value string
 }
 
-func Scripture_Id(v string) Scripture_Id_Field {
-	return Scripture_Id_Field{_set: true, _value: v}
+func Citation_Id(v string) Citation_Id_Field {
+	return Citation_Id_Field{_set: true, _value: v}
 }
 
-func (f Scripture_Id_Field) value() interface{} {
+func (f Citation_Id_Field) value() interface{} {
 	if !f._set {
 		return nil
 	}
 	return f._value
 }
 
-func (Scripture_Id_Field) _Column() string { return "id" }
+func (Citation_Id_Field) _Column() string { return "id" }
 
-type Scripture_Chapter_Field struct {
+type Citation_Reference_Field struct {
 	_set   bool
-	_value int64
+	_value *string
 }
 
-func Scripture_Chapter(v int64) Scripture_Chapter_Field {
-	return Scripture_Chapter_Field{_set: true, _value: v}
+func Citation_Reference(v string) Citation_Reference_Field {
+	return Citation_Reference_Field{_set: true, _value: &v}
 }
 
-func (f Scripture_Chapter_Field) value() interface{} {
+func Citation_Reference_Raw(v *string) Citation_Reference_Field {
+	if v == nil {
+		return Citation_Reference_Null()
+	}
+	return Citation_Reference(*v)
+}
+
+func Citation_Reference_Null() Citation_Reference_Field {
+	return Citation_Reference_Field{_set: true}
+}
+
+func (f Citation_Reference_Field) isnull() bool { return !f._set || f._value == nil }
+
+func (f Citation_Reference_Field) value() interface{} {
 	if !f._set {
 		return nil
 	}
 	return f._value
 }
 
-func (Scripture_Chapter_Field) _Column() string { return "chapter" }
+func (Citation_Reference_Field) _Column() string { return "reference" }
 
-type Scripture_Book_Field struct {
+type Citation_Author_Field struct {
 	_set   bool
-	_value string
+	_value *string
 }
 
-func Scripture_Book(v string) Scripture_Book_Field {
-	return Scripture_Book_Field{_set: true, _value: v}
+func Citation_Author(v string) Citation_Author_Field {
+	return Citation_Author_Field{_set: true, _value: &v}
 }
 
-func (f Scripture_Book_Field) value() interface{} {
+func Citation_Author_Raw(v *string) Citation_Author_Field {
+	if v == nil {
+		return Citation_Author_Null()
+	}
+	return Citation_Author(*v)
+}
+
+func Citation_Author_Null() Citation_Author_Field {
+	return Citation_Author_Field{_set: true}
+}
+
+func (f Citation_Author_Field) isnull() bool { return !f._set || f._value == nil }
+
+func (f Citation_Author_Field) value() interface{} {
 	if !f._set {
 		return nil
 	}
 	return f._value
 }
 
-func (Scripture_Book_Field) _Column() string { return "book" }
+func (Citation_Author_Field) _Column() string { return "author" }
 
-type Scripture_VerseNumber_Field struct {
+type Citation_Text_Field struct {
 	_set   bool
-	_value int64
+	_value *string
 }
 
-func Scripture_VerseNumber(v int64) Scripture_VerseNumber_Field {
-	return Scripture_VerseNumber_Field{_set: true, _value: v}
+func Citation_Text(v string) Citation_Text_Field {
+	return Citation_Text_Field{_set: true, _value: &v}
 }
 
-func (f Scripture_VerseNumber_Field) value() interface{} {
+func Citation_Text_Raw(v *string) Citation_Text_Field {
+	if v == nil {
+		return Citation_Text_Null()
+	}
+	return Citation_Text(*v)
+}
+
+func Citation_Text_Null() Citation_Text_Field {
+	return Citation_Text_Field{_set: true}
+}
+
+func (f Citation_Text_Field) isnull() bool { return !f._set || f._value == nil }
+
+func (f Citation_Text_Field) value() interface{} {
 	if !f._set {
 		return nil
 	}
 	return f._value
 }
 
-func (Scripture_VerseNumber_Field) _Column() string { return "verse_number" }
+func (Citation_Text_Field) _Column() string { return "text" }
 
-type Scripture_VerseText_Field struct {
+type Citation_Book_Field struct {
 	_set   bool
-	_value string
+	_value *string
 }
 
-func Scripture_VerseText(v string) Scripture_VerseText_Field {
-	return Scripture_VerseText_Field{_set: true, _value: v}
+func Citation_Book(v string) Citation_Book_Field {
+	return Citation_Book_Field{_set: true, _value: &v}
 }
 
-func (f Scripture_VerseText_Field) value() interface{} {
+func Citation_Book_Raw(v *string) Citation_Book_Field {
+	if v == nil {
+		return Citation_Book_Null()
+	}
+	return Citation_Book(*v)
+}
+
+func Citation_Book_Null() Citation_Book_Field {
+	return Citation_Book_Field{_set: true}
+}
+
+func (f Citation_Book_Field) isnull() bool { return !f._set || f._value == nil }
+
+func (f Citation_Book_Field) value() interface{} {
 	if !f._set {
 		return nil
 	}
 	return f._value
 }
 
-func (Scripture_VerseText_Field) _Column() string { return "verse_text" }
+func (Citation_Book_Field) _Column() string { return "book" }
 
-type Scripture_Hint_Field struct {
+type Citation_Hint_Field struct {
 	_set   bool
-	_value string
+	_value *string
 }
 
-func Scripture_Hint(v string) Scripture_Hint_Field {
-	return Scripture_Hint_Field{_set: true, _value: v}
+func Citation_Hint(v string) Citation_Hint_Field {
+	return Citation_Hint_Field{_set: true, _value: &v}
 }
 
-func (f Scripture_Hint_Field) value() interface{} {
+func Citation_Hint_Raw(v *string) Citation_Hint_Field {
+	if v == nil {
+		return Citation_Hint_Null()
+	}
+	return Citation_Hint(*v)
+}
+
+func Citation_Hint_Null() Citation_Hint_Field {
+	return Citation_Hint_Field{_set: true}
+}
+
+func (f Citation_Hint_Field) isnull() bool { return !f._set || f._value == nil }
+
+func (f Citation_Hint_Field) value() interface{} {
 	if !f._set {
 		return nil
 	}
 	return f._value
 }
 
-func (Scripture_Hint_Field) _Column() string { return "hint" }
+func (Citation_Hint_Field) _Column() string { return "hint" }
+
+type Citation_Year_Field struct {
+	_set   bool
+	_value *int64
+}
+
+func Citation_Year(v int64) Citation_Year_Field {
+	return Citation_Year_Field{_set: true, _value: &v}
+}
+
+func Citation_Year_Raw(v *int64) Citation_Year_Field {
+	if v == nil {
+		return Citation_Year_Null()
+	}
+	return Citation_Year(*v)
+}
+
+func Citation_Year_Null() Citation_Year_Field {
+	return Citation_Year_Field{_set: true}
+}
+
+func (f Citation_Year_Field) isnull() bool { return !f._set || f._value == nil }
+
+func (f Citation_Year_Field) value() interface{} {
+	if !f._set {
+		return nil
+	}
+	return f._value
+}
+
+func (Citation_Year_Field) _Column() string { return "year" }
 
 func toUTC(t time.Time) time.Time {
 	return t.UTC()
@@ -754,62 +885,58 @@ func (h *__sqlbundle_Hole) Render() string { return h.SQL.Render() }
 // end runtime support for building sql statements
 //
 
-func (obj *postgresImpl) Create_Scripture(ctx context.Context,
-	scripture_id Scripture_Id_Field,
-	scripture_chapter Scripture_Chapter_Field,
-	scripture_book Scripture_Book_Field,
-	scripture_verse_number Scripture_VerseNumber_Field,
-	scripture_verse_text Scripture_VerseText_Field,
-	scripture_hint Scripture_Hint_Field) (
-	scripture *Scripture, err error) {
+func (obj *postgresImpl) Create_Citation(ctx context.Context,
+	citation_id Citation_Id_Field,
+	optional Citation_Create_Fields) (
+	citation *Citation, err error) {
 
 	__now := obj.db.Hooks.Now().UTC()
 	__created_at_val := __now
-	__id_val := scripture_id.value()
-	__chapter_val := scripture_chapter.value()
-	__book_val := scripture_book.value()
-	__verse_number_val := scripture_verse_number.value()
-	__verse_text_val := scripture_verse_text.value()
-	__hint_val := scripture_hint.value()
+	__mem_date_val := __now
+	__id_val := citation_id.value()
+	__reference_val := optional.Reference.value()
+	__author_val := optional.Author.value()
+	__text_val := optional.Text.value()
+	__book_val := optional.Book.value()
+	__hint_val := optional.Hint.value()
+	__year_val := optional.Year.value()
 
-	var __embed_stmt = __sqlbundle_Literal("INSERT INTO scriptures ( created_at, id, chapter, book, verse_number, verse_text, hint ) VALUES ( ?, ?, ?, ?, ?, ?, ? ) RETURNING scriptures.pk, scriptures.created_at, scriptures.id, scriptures.chapter, scriptures.book, scriptures.verse_number, scriptures.verse_text, scriptures.hint")
+	var __embed_stmt = __sqlbundle_Literal("INSERT INTO citations ( created_at, mem_date, id, reference, author, text, book, hint, year ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ? ) RETURNING citations.pk, citations.created_at, citations.mem_date, citations.id, citations.reference, citations.author, citations.text, citations.book, citations.hint, citations.year")
 
 	var __stmt = __sqlbundle_Render(obj.dialect, __embed_stmt)
-	obj.logStmt(__stmt, __created_at_val, __id_val, __chapter_val, __book_val, __verse_number_val, __verse_text_val, __hint_val)
+	obj.logStmt(__stmt, __created_at_val, __mem_date_val, __id_val, __reference_val, __author_val, __text_val, __book_val, __hint_val, __year_val)
 
-	scripture = &Scripture{}
-	err = obj.driver.QueryRow(__stmt, __created_at_val, __id_val, __chapter_val, __book_val, __verse_number_val, __verse_text_val, __hint_val).Scan(&scripture.Pk, &scripture.CreatedAt, &scripture.Id, &scripture.Chapter, &scripture.Book, &scripture.VerseNumber, &scripture.VerseText, &scripture.Hint)
+	citation = &Citation{}
+	err = obj.driver.QueryRow(__stmt, __created_at_val, __mem_date_val, __id_val, __reference_val, __author_val, __text_val, __book_val, __hint_val, __year_val).Scan(&citation.Pk, &citation.CreatedAt, &citation.MemDate, &citation.Id, &citation.Reference, &citation.Author, &citation.Text, &citation.Book, &citation.Hint, &citation.Year)
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
-	return scripture, nil
+	return citation, nil
 
 }
 
-func (obj *postgresImpl) CreateNoReturn_Scripture(ctx context.Context,
-	scripture_id Scripture_Id_Field,
-	scripture_chapter Scripture_Chapter_Field,
-	scripture_book Scripture_Book_Field,
-	scripture_verse_number Scripture_VerseNumber_Field,
-	scripture_verse_text Scripture_VerseText_Field,
-	scripture_hint Scripture_Hint_Field) (
+func (obj *postgresImpl) CreateNoReturn_Citation(ctx context.Context,
+	citation_id Citation_Id_Field,
+	optional Citation_Create_Fields) (
 	err error) {
 
 	__now := obj.db.Hooks.Now().UTC()
 	__created_at_val := __now
-	__id_val := scripture_id.value()
-	__chapter_val := scripture_chapter.value()
-	__book_val := scripture_book.value()
-	__verse_number_val := scripture_verse_number.value()
-	__verse_text_val := scripture_verse_text.value()
-	__hint_val := scripture_hint.value()
+	__mem_date_val := __now
+	__id_val := citation_id.value()
+	__reference_val := optional.Reference.value()
+	__author_val := optional.Author.value()
+	__text_val := optional.Text.value()
+	__book_val := optional.Book.value()
+	__hint_val := optional.Hint.value()
+	__year_val := optional.Year.value()
 
-	var __embed_stmt = __sqlbundle_Literal("INSERT INTO scriptures ( created_at, id, chapter, book, verse_number, verse_text, hint ) VALUES ( ?, ?, ?, ?, ?, ?, ? )")
+	var __embed_stmt = __sqlbundle_Literal("INSERT INTO citations ( created_at, mem_date, id, reference, author, text, book, hint, year ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ? )")
 
 	var __stmt = __sqlbundle_Render(obj.dialect, __embed_stmt)
-	obj.logStmt(__stmt, __created_at_val, __id_val, __chapter_val, __book_val, __verse_number_val, __verse_text_val, __hint_val)
+	obj.logStmt(__stmt, __created_at_val, __mem_date_val, __id_val, __reference_val, __author_val, __text_val, __book_val, __hint_val, __year_val)
 
-	_, err = obj.driver.Exec(__stmt, __created_at_val, __id_val, __chapter_val, __book_val, __verse_number_val, __verse_text_val, __hint_val)
+	_, err = obj.driver.Exec(__stmt, __created_at_val, __mem_date_val, __id_val, __reference_val, __author_val, __text_val, __book_val, __hint_val, __year_val)
 	if err != nil {
 		return obj.makeErr(err)
 	}
@@ -817,42 +944,57 @@ func (obj *postgresImpl) CreateNoReturn_Scripture(ctx context.Context,
 
 }
 
-func (obj *postgresImpl) Get_Scripture_By_Id(ctx context.Context,
-	scripture_id Scripture_Id_Field) (
-	scripture *Scripture, err error) {
+func (obj *postgresImpl) Get_Citation_By_Id(ctx context.Context,
+	citation_id Citation_Id_Field) (
+	citation *Citation, err error) {
 
-	var __embed_stmt = __sqlbundle_Literal("SELECT scriptures.pk, scriptures.created_at, scriptures.id, scriptures.chapter, scriptures.book, scriptures.verse_number, scriptures.verse_text, scriptures.hint FROM scriptures WHERE scriptures.id = ?")
+	var __embed_stmt = __sqlbundle_Literal("SELECT citations.pk, citations.created_at, citations.mem_date, citations.id, citations.reference, citations.author, citations.text, citations.book, citations.hint, citations.year FROM citations WHERE citations.id = ?")
 
 	var __values []interface{}
-	__values = append(__values, scripture_id.value())
+	__values = append(__values, citation_id.value())
 
 	var __stmt = __sqlbundle_Render(obj.dialect, __embed_stmt)
 	obj.logStmt(__stmt, __values...)
 
-	scripture = &Scripture{}
-	err = obj.driver.QueryRow(__stmt, __values...).Scan(&scripture.Pk, &scripture.CreatedAt, &scripture.Id, &scripture.Chapter, &scripture.Book, &scripture.VerseNumber, &scripture.VerseText, &scripture.Hint)
+	citation = &Citation{}
+	err = obj.driver.QueryRow(__stmt, __values...).Scan(&citation.Pk, &citation.CreatedAt, &citation.MemDate, &citation.Id, &citation.Reference, &citation.Author, &citation.Text, &citation.Book, &citation.Hint, &citation.Year)
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
-	return scripture, nil
+	return citation, nil
 
 }
 
-func (obj *postgresImpl) Update_Scripture_By_Id(ctx context.Context,
-	scripture_id Scripture_Id_Field,
-	update Scripture_Update_Fields) (
-	scripture *Scripture, err error) {
+func (obj *postgresImpl) Update_Citation_By_Id(ctx context.Context,
+	citation_id Citation_Id_Field,
+	update Citation_Update_Fields) (
+	citation *Citation, err error) {
 	var __sets = &__sqlbundle_Hole{}
 
-	var __embed_stmt = __sqlbundle_Literals{Join: "", SQLs: []__sqlbundle_SQL{__sqlbundle_Literal("UPDATE scriptures SET "), __sets, __sqlbundle_Literal(" WHERE scriptures.id = ? RETURNING scriptures.pk, scriptures.created_at, scriptures.id, scriptures.chapter, scriptures.book, scriptures.verse_number, scriptures.verse_text, scriptures.hint")}}
+	var __embed_stmt = __sqlbundle_Literals{Join: "", SQLs: []__sqlbundle_SQL{__sqlbundle_Literal("UPDATE citations SET "), __sets, __sqlbundle_Literal(" WHERE citations.id = ? RETURNING citations.pk, citations.created_at, citations.mem_date, citations.id, citations.reference, citations.author, citations.text, citations.book, citations.hint, citations.year")}}
 
 	__sets_sql := __sqlbundle_Literals{Join: ", "}
 	var __values []interface{}
 	var __args []interface{}
 
-	if update.Chapter._set {
-		__values = append(__values, update.Chapter.value())
-		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("chapter = ?"))
+	if update.MemDate._set {
+		__values = append(__values, update.MemDate.value())
+		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("mem_date = ?"))
+	}
+
+	if update.Reference._set {
+		__values = append(__values, update.Reference.value())
+		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("reference = ?"))
+	}
+
+	if update.Author._set {
+		__values = append(__values, update.Author.value())
+		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("author = ?"))
+	}
+
+	if update.Text._set {
+		__values = append(__values, update.Text.value())
+		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("text = ?"))
 	}
 
 	if update.Book._set {
@@ -860,26 +1002,21 @@ func (obj *postgresImpl) Update_Scripture_By_Id(ctx context.Context,
 		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("book = ?"))
 	}
 
-	if update.VerseNumber._set {
-		__values = append(__values, update.VerseNumber.value())
-		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("verse_number = ?"))
-	}
-
-	if update.VerseText._set {
-		__values = append(__values, update.VerseText.value())
-		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("verse_text = ?"))
-	}
-
 	if update.Hint._set {
 		__values = append(__values, update.Hint.value())
 		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("hint = ?"))
+	}
+
+	if update.Year._set {
+		__values = append(__values, update.Year.value())
+		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("year = ?"))
 	}
 
 	if len(__sets_sql.SQLs) == 0 {
 		return nil, emptyUpdate()
 	}
 
-	__args = append(__args, scripture_id.value())
+	__args = append(__args, citation_id.value())
 
 	__values = append(__values, __args...)
 	__sets.SQL = __sets_sql
@@ -887,15 +1024,15 @@ func (obj *postgresImpl) Update_Scripture_By_Id(ctx context.Context,
 	var __stmt = __sqlbundle_Render(obj.dialect, __embed_stmt)
 	obj.logStmt(__stmt, __values...)
 
-	scripture = &Scripture{}
-	err = obj.driver.QueryRow(__stmt, __values...).Scan(&scripture.Pk, &scripture.CreatedAt, &scripture.Id, &scripture.Chapter, &scripture.Book, &scripture.VerseNumber, &scripture.VerseText, &scripture.Hint)
+	citation = &Citation{}
+	err = obj.driver.QueryRow(__stmt, __values...).Scan(&citation.Pk, &citation.CreatedAt, &citation.MemDate, &citation.Id, &citation.Reference, &citation.Author, &citation.Text, &citation.Book, &citation.Hint, &citation.Year)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
-	return scripture, nil
+	return citation, nil
 }
 
 func (impl postgresImpl) isConstraintError(err error) (
@@ -911,7 +1048,7 @@ func (impl postgresImpl) isConstraintError(err error) (
 func (obj *postgresImpl) deleteAll(ctx context.Context) (count int64, err error) {
 	var __res sql.Result
 	var __count int64
-	__res, err = obj.driver.Exec("DELETE FROM scriptures;")
+	__res, err = obj.driver.Exec("DELETE FROM citations;")
 	if err != nil {
 		return 0, obj.makeErr(err)
 	}
@@ -926,30 +1063,28 @@ func (obj *postgresImpl) deleteAll(ctx context.Context) (count int64, err error)
 
 }
 
-func (obj *sqlite3Impl) Create_Scripture(ctx context.Context,
-	scripture_id Scripture_Id_Field,
-	scripture_chapter Scripture_Chapter_Field,
-	scripture_book Scripture_Book_Field,
-	scripture_verse_number Scripture_VerseNumber_Field,
-	scripture_verse_text Scripture_VerseText_Field,
-	scripture_hint Scripture_Hint_Field) (
-	scripture *Scripture, err error) {
+func (obj *sqlite3Impl) Create_Citation(ctx context.Context,
+	citation_id Citation_Id_Field,
+	optional Citation_Create_Fields) (
+	citation *Citation, err error) {
 
 	__now := obj.db.Hooks.Now().UTC()
 	__created_at_val := __now
-	__id_val := scripture_id.value()
-	__chapter_val := scripture_chapter.value()
-	__book_val := scripture_book.value()
-	__verse_number_val := scripture_verse_number.value()
-	__verse_text_val := scripture_verse_text.value()
-	__hint_val := scripture_hint.value()
+	__mem_date_val := __now
+	__id_val := citation_id.value()
+	__reference_val := optional.Reference.value()
+	__author_val := optional.Author.value()
+	__text_val := optional.Text.value()
+	__book_val := optional.Book.value()
+	__hint_val := optional.Hint.value()
+	__year_val := optional.Year.value()
 
-	var __embed_stmt = __sqlbundle_Literal("INSERT INTO scriptures ( created_at, id, chapter, book, verse_number, verse_text, hint ) VALUES ( ?, ?, ?, ?, ?, ?, ? )")
+	var __embed_stmt = __sqlbundle_Literal("INSERT INTO citations ( created_at, mem_date, id, reference, author, text, book, hint, year ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ? )")
 
 	var __stmt = __sqlbundle_Render(obj.dialect, __embed_stmt)
-	obj.logStmt(__stmt, __created_at_val, __id_val, __chapter_val, __book_val, __verse_number_val, __verse_text_val, __hint_val)
+	obj.logStmt(__stmt, __created_at_val, __mem_date_val, __id_val, __reference_val, __author_val, __text_val, __book_val, __hint_val, __year_val)
 
-	__res, err := obj.driver.Exec(__stmt, __created_at_val, __id_val, __chapter_val, __book_val, __verse_number_val, __verse_text_val, __hint_val)
+	__res, err := obj.driver.Exec(__stmt, __created_at_val, __mem_date_val, __id_val, __reference_val, __author_val, __text_val, __book_val, __hint_val, __year_val)
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
@@ -957,34 +1092,32 @@ func (obj *sqlite3Impl) Create_Scripture(ctx context.Context,
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
-	return obj.getLastScripture(ctx, __pk)
+	return obj.getLastCitation(ctx, __pk)
 
 }
 
-func (obj *sqlite3Impl) CreateNoReturn_Scripture(ctx context.Context,
-	scripture_id Scripture_Id_Field,
-	scripture_chapter Scripture_Chapter_Field,
-	scripture_book Scripture_Book_Field,
-	scripture_verse_number Scripture_VerseNumber_Field,
-	scripture_verse_text Scripture_VerseText_Field,
-	scripture_hint Scripture_Hint_Field) (
+func (obj *sqlite3Impl) CreateNoReturn_Citation(ctx context.Context,
+	citation_id Citation_Id_Field,
+	optional Citation_Create_Fields) (
 	err error) {
 
 	__now := obj.db.Hooks.Now().UTC()
 	__created_at_val := __now
-	__id_val := scripture_id.value()
-	__chapter_val := scripture_chapter.value()
-	__book_val := scripture_book.value()
-	__verse_number_val := scripture_verse_number.value()
-	__verse_text_val := scripture_verse_text.value()
-	__hint_val := scripture_hint.value()
+	__mem_date_val := __now
+	__id_val := citation_id.value()
+	__reference_val := optional.Reference.value()
+	__author_val := optional.Author.value()
+	__text_val := optional.Text.value()
+	__book_val := optional.Book.value()
+	__hint_val := optional.Hint.value()
+	__year_val := optional.Year.value()
 
-	var __embed_stmt = __sqlbundle_Literal("INSERT INTO scriptures ( created_at, id, chapter, book, verse_number, verse_text, hint ) VALUES ( ?, ?, ?, ?, ?, ?, ? )")
+	var __embed_stmt = __sqlbundle_Literal("INSERT INTO citations ( created_at, mem_date, id, reference, author, text, book, hint, year ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ? )")
 
 	var __stmt = __sqlbundle_Render(obj.dialect, __embed_stmt)
-	obj.logStmt(__stmt, __created_at_val, __id_val, __chapter_val, __book_val, __verse_number_val, __verse_text_val, __hint_val)
+	obj.logStmt(__stmt, __created_at_val, __mem_date_val, __id_val, __reference_val, __author_val, __text_val, __book_val, __hint_val, __year_val)
 
-	_, err = obj.driver.Exec(__stmt, __created_at_val, __id_val, __chapter_val, __book_val, __verse_number_val, __verse_text_val, __hint_val)
+	_, err = obj.driver.Exec(__stmt, __created_at_val, __mem_date_val, __id_val, __reference_val, __author_val, __text_val, __book_val, __hint_val, __year_val)
 	if err != nil {
 		return obj.makeErr(err)
 	}
@@ -992,42 +1125,57 @@ func (obj *sqlite3Impl) CreateNoReturn_Scripture(ctx context.Context,
 
 }
 
-func (obj *sqlite3Impl) Get_Scripture_By_Id(ctx context.Context,
-	scripture_id Scripture_Id_Field) (
-	scripture *Scripture, err error) {
+func (obj *sqlite3Impl) Get_Citation_By_Id(ctx context.Context,
+	citation_id Citation_Id_Field) (
+	citation *Citation, err error) {
 
-	var __embed_stmt = __sqlbundle_Literal("SELECT scriptures.pk, scriptures.created_at, scriptures.id, scriptures.chapter, scriptures.book, scriptures.verse_number, scriptures.verse_text, scriptures.hint FROM scriptures WHERE scriptures.id = ?")
+	var __embed_stmt = __sqlbundle_Literal("SELECT citations.pk, citations.created_at, citations.mem_date, citations.id, citations.reference, citations.author, citations.text, citations.book, citations.hint, citations.year FROM citations WHERE citations.id = ?")
 
 	var __values []interface{}
-	__values = append(__values, scripture_id.value())
+	__values = append(__values, citation_id.value())
 
 	var __stmt = __sqlbundle_Render(obj.dialect, __embed_stmt)
 	obj.logStmt(__stmt, __values...)
 
-	scripture = &Scripture{}
-	err = obj.driver.QueryRow(__stmt, __values...).Scan(&scripture.Pk, &scripture.CreatedAt, &scripture.Id, &scripture.Chapter, &scripture.Book, &scripture.VerseNumber, &scripture.VerseText, &scripture.Hint)
+	citation = &Citation{}
+	err = obj.driver.QueryRow(__stmt, __values...).Scan(&citation.Pk, &citation.CreatedAt, &citation.MemDate, &citation.Id, &citation.Reference, &citation.Author, &citation.Text, &citation.Book, &citation.Hint, &citation.Year)
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
-	return scripture, nil
+	return citation, nil
 
 }
 
-func (obj *sqlite3Impl) Update_Scripture_By_Id(ctx context.Context,
-	scripture_id Scripture_Id_Field,
-	update Scripture_Update_Fields) (
-	scripture *Scripture, err error) {
+func (obj *sqlite3Impl) Update_Citation_By_Id(ctx context.Context,
+	citation_id Citation_Id_Field,
+	update Citation_Update_Fields) (
+	citation *Citation, err error) {
 	var __sets = &__sqlbundle_Hole{}
 
-	var __embed_stmt = __sqlbundle_Literals{Join: "", SQLs: []__sqlbundle_SQL{__sqlbundle_Literal("UPDATE scriptures SET "), __sets, __sqlbundle_Literal(" WHERE scriptures.id = ?")}}
+	var __embed_stmt = __sqlbundle_Literals{Join: "", SQLs: []__sqlbundle_SQL{__sqlbundle_Literal("UPDATE citations SET "), __sets, __sqlbundle_Literal(" WHERE citations.id = ?")}}
 
 	__sets_sql := __sqlbundle_Literals{Join: ", "}
 	var __values []interface{}
 	var __args []interface{}
 
-	if update.Chapter._set {
-		__values = append(__values, update.Chapter.value())
-		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("chapter = ?"))
+	if update.MemDate._set {
+		__values = append(__values, update.MemDate.value())
+		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("mem_date = ?"))
+	}
+
+	if update.Reference._set {
+		__values = append(__values, update.Reference.value())
+		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("reference = ?"))
+	}
+
+	if update.Author._set {
+		__values = append(__values, update.Author.value())
+		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("author = ?"))
+	}
+
+	if update.Text._set {
+		__values = append(__values, update.Text.value())
+		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("text = ?"))
 	}
 
 	if update.Book._set {
@@ -1035,26 +1183,21 @@ func (obj *sqlite3Impl) Update_Scripture_By_Id(ctx context.Context,
 		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("book = ?"))
 	}
 
-	if update.VerseNumber._set {
-		__values = append(__values, update.VerseNumber.value())
-		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("verse_number = ?"))
-	}
-
-	if update.VerseText._set {
-		__values = append(__values, update.VerseText.value())
-		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("verse_text = ?"))
-	}
-
 	if update.Hint._set {
 		__values = append(__values, update.Hint.value())
 		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("hint = ?"))
+	}
+
+	if update.Year._set {
+		__values = append(__values, update.Year.value())
+		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("year = ?"))
 	}
 
 	if len(__sets_sql.SQLs) == 0 {
 		return nil, emptyUpdate()
 	}
 
-	__args = append(__args, scripture_id.value())
+	__args = append(__args, citation_id.value())
 
 	__values = append(__values, __args...)
 	__sets.SQL = __sets_sql
@@ -1062,42 +1205,42 @@ func (obj *sqlite3Impl) Update_Scripture_By_Id(ctx context.Context,
 	var __stmt = __sqlbundle_Render(obj.dialect, __embed_stmt)
 	obj.logStmt(__stmt, __values...)
 
-	scripture = &Scripture{}
+	citation = &Citation{}
 	_, err = obj.driver.Exec(__stmt, __values...)
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
 
-	var __embed_stmt_get = __sqlbundle_Literal("SELECT scriptures.pk, scriptures.created_at, scriptures.id, scriptures.chapter, scriptures.book, scriptures.verse_number, scriptures.verse_text, scriptures.hint FROM scriptures WHERE scriptures.id = ?")
+	var __embed_stmt_get = __sqlbundle_Literal("SELECT citations.pk, citations.created_at, citations.mem_date, citations.id, citations.reference, citations.author, citations.text, citations.book, citations.hint, citations.year FROM citations WHERE citations.id = ?")
 
 	var __stmt_get = __sqlbundle_Render(obj.dialect, __embed_stmt_get)
 	obj.logStmt("(IMPLIED) "+__stmt_get, __args...)
 
-	err = obj.driver.QueryRow(__stmt_get, __args...).Scan(&scripture.Pk, &scripture.CreatedAt, &scripture.Id, &scripture.Chapter, &scripture.Book, &scripture.VerseNumber, &scripture.VerseText, &scripture.Hint)
+	err = obj.driver.QueryRow(__stmt_get, __args...).Scan(&citation.Pk, &citation.CreatedAt, &citation.MemDate, &citation.Id, &citation.Reference, &citation.Author, &citation.Text, &citation.Book, &citation.Hint, &citation.Year)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
-	return scripture, nil
+	return citation, nil
 }
 
-func (obj *sqlite3Impl) getLastScripture(ctx context.Context,
+func (obj *sqlite3Impl) getLastCitation(ctx context.Context,
 	pk int64) (
-	scripture *Scripture, err error) {
+	citation *Citation, err error) {
 
-	var __embed_stmt = __sqlbundle_Literal("SELECT scriptures.pk, scriptures.created_at, scriptures.id, scriptures.chapter, scriptures.book, scriptures.verse_number, scriptures.verse_text, scriptures.hint FROM scriptures WHERE _rowid_ = ?")
+	var __embed_stmt = __sqlbundle_Literal("SELECT citations.pk, citations.created_at, citations.mem_date, citations.id, citations.reference, citations.author, citations.text, citations.book, citations.hint, citations.year FROM citations WHERE _rowid_ = ?")
 
 	var __stmt = __sqlbundle_Render(obj.dialect, __embed_stmt)
 	obj.logStmt(__stmt, pk)
 
-	scripture = &Scripture{}
-	err = obj.driver.QueryRow(__stmt, pk).Scan(&scripture.Pk, &scripture.CreatedAt, &scripture.Id, &scripture.Chapter, &scripture.Book, &scripture.VerseNumber, &scripture.VerseText, &scripture.Hint)
+	citation = &Citation{}
+	err = obj.driver.QueryRow(__stmt, pk).Scan(&citation.Pk, &citation.CreatedAt, &citation.MemDate, &citation.Id, &citation.Reference, &citation.Author, &citation.Text, &citation.Book, &citation.Hint, &citation.Year)
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
-	return scripture, nil
+	return citation, nil
 
 }
 
@@ -1119,7 +1262,7 @@ func (impl sqlite3Impl) isConstraintError(err error) (
 func (obj *sqlite3Impl) deleteAll(ctx context.Context) (count int64, err error) {
 	var __res sql.Result
 	var __count int64
-	__res, err = obj.driver.Exec("DELETE FROM scriptures;")
+	__res, err = obj.driver.Exec("DELETE FROM citations;")
 	if err != nil {
 		return 0, obj.makeErr(err)
 	}
@@ -1176,86 +1319,70 @@ func (rx *Rx) Rollback() (err error) {
 	return err
 }
 
-func (rx *Rx) CreateNoReturn_Scripture(ctx context.Context,
-	scripture_id Scripture_Id_Field,
-	scripture_chapter Scripture_Chapter_Field,
-	scripture_book Scripture_Book_Field,
-	scripture_verse_number Scripture_VerseNumber_Field,
-	scripture_verse_text Scripture_VerseText_Field,
-	scripture_hint Scripture_Hint_Field) (
+func (rx *Rx) CreateNoReturn_Citation(ctx context.Context,
+	citation_id Citation_Id_Field,
+	optional Citation_Create_Fields) (
 	err error) {
 	var tx *Tx
 	if tx, err = rx.getTx(ctx); err != nil {
 		return
 	}
-	return tx.CreateNoReturn_Scripture(ctx, scripture_id, scripture_chapter, scripture_book, scripture_verse_number, scripture_verse_text, scripture_hint)
+	return tx.CreateNoReturn_Citation(ctx, citation_id, optional)
 
 }
 
-func (rx *Rx) Create_Scripture(ctx context.Context,
-	scripture_id Scripture_Id_Field,
-	scripture_chapter Scripture_Chapter_Field,
-	scripture_book Scripture_Book_Field,
-	scripture_verse_number Scripture_VerseNumber_Field,
-	scripture_verse_text Scripture_VerseText_Field,
-	scripture_hint Scripture_Hint_Field) (
-	scripture *Scripture, err error) {
+func (rx *Rx) Create_Citation(ctx context.Context,
+	citation_id Citation_Id_Field,
+	optional Citation_Create_Fields) (
+	citation *Citation, err error) {
 	var tx *Tx
 	if tx, err = rx.getTx(ctx); err != nil {
 		return
 	}
-	return tx.Create_Scripture(ctx, scripture_id, scripture_chapter, scripture_book, scripture_verse_number, scripture_verse_text, scripture_hint)
+	return tx.Create_Citation(ctx, citation_id, optional)
 
 }
 
-func (rx *Rx) Get_Scripture_By_Id(ctx context.Context,
-	scripture_id Scripture_Id_Field) (
-	scripture *Scripture, err error) {
+func (rx *Rx) Get_Citation_By_Id(ctx context.Context,
+	citation_id Citation_Id_Field) (
+	citation *Citation, err error) {
 	var tx *Tx
 	if tx, err = rx.getTx(ctx); err != nil {
 		return
 	}
-	return tx.Get_Scripture_By_Id(ctx, scripture_id)
+	return tx.Get_Citation_By_Id(ctx, citation_id)
 }
 
-func (rx *Rx) Update_Scripture_By_Id(ctx context.Context,
-	scripture_id Scripture_Id_Field,
-	update Scripture_Update_Fields) (
-	scripture *Scripture, err error) {
+func (rx *Rx) Update_Citation_By_Id(ctx context.Context,
+	citation_id Citation_Id_Field,
+	update Citation_Update_Fields) (
+	citation *Citation, err error) {
 	var tx *Tx
 	if tx, err = rx.getTx(ctx); err != nil {
 		return
 	}
-	return tx.Update_Scripture_By_Id(ctx, scripture_id, update)
+	return tx.Update_Citation_By_Id(ctx, citation_id, update)
 }
 
 type Methods interface {
-	CreateNoReturn_Scripture(ctx context.Context,
-		scripture_id Scripture_Id_Field,
-		scripture_chapter Scripture_Chapter_Field,
-		scripture_book Scripture_Book_Field,
-		scripture_verse_number Scripture_VerseNumber_Field,
-		scripture_verse_text Scripture_VerseText_Field,
-		scripture_hint Scripture_Hint_Field) (
+	CreateNoReturn_Citation(ctx context.Context,
+		citation_id Citation_Id_Field,
+		optional Citation_Create_Fields) (
 		err error)
 
-	Create_Scripture(ctx context.Context,
-		scripture_id Scripture_Id_Field,
-		scripture_chapter Scripture_Chapter_Field,
-		scripture_book Scripture_Book_Field,
-		scripture_verse_number Scripture_VerseNumber_Field,
-		scripture_verse_text Scripture_VerseText_Field,
-		scripture_hint Scripture_Hint_Field) (
-		scripture *Scripture, err error)
+	Create_Citation(ctx context.Context,
+		citation_id Citation_Id_Field,
+		optional Citation_Create_Fields) (
+		citation *Citation, err error)
 
-	Get_Scripture_By_Id(ctx context.Context,
-		scripture_id Scripture_Id_Field) (
-		scripture *Scripture, err error)
+	Get_Citation_By_Id(ctx context.Context,
+		citation_id Citation_Id_Field) (
+		citation *Citation, err error)
 
-	Update_Scripture_By_Id(ctx context.Context,
-		scripture_id Scripture_Id_Field,
-		update Scripture_Update_Fields) (
-		scripture *Scripture, err error)
+	Update_Citation_By_Id(ctx context.Context,
+		citation_id Citation_Id_Field,
+		update Citation_Update_Fields) (
+		citation *Citation, err error)
 }
 
 type TxMethods interface {
