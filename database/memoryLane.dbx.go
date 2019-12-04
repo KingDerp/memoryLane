@@ -279,7 +279,7 @@ func (obj *postgresDB) Schema() string {
 	id text NOT NULL,
 	reference text,
 	author text,
-	text text,
+	text text NOT NULL,
 	book text,
 	hint text,
 	year bigint,
@@ -356,7 +356,7 @@ func (obj *sqlite3DB) Schema() string {
 	id TEXT NOT NULL,
 	reference TEXT,
 	author TEXT,
-	text TEXT,
+	text TEXT NOT NULL,
 	book TEXT,
 	hint TEXT,
 	year INTEGER,
@@ -432,7 +432,7 @@ type Citation struct {
 	Id        string
 	Reference *string
 	Author    *string
-	Text      *string
+	Text      string
 	Book      *string
 	Hint      *string
 	Year      *int64
@@ -443,7 +443,6 @@ func (Citation) _Table() string { return "citations" }
 type Citation_Create_Fields struct {
 	Reference Citation_Reference_Field
 	Author    Citation_Author_Field
-	Text      Citation_Text_Field
 	Book      Citation_Book_Field
 	Hint      Citation_Hint_Field
 	Year      Citation_Year_Field
@@ -595,25 +594,12 @@ func (Citation_Author_Field) _Column() string { return "author" }
 
 type Citation_Text_Field struct {
 	_set   bool
-	_value *string
+	_value string
 }
 
 func Citation_Text(v string) Citation_Text_Field {
-	return Citation_Text_Field{_set: true, _value: &v}
+	return Citation_Text_Field{_set: true, _value: v}
 }
-
-func Citation_Text_Raw(v *string) Citation_Text_Field {
-	if v == nil {
-		return Citation_Text_Null()
-	}
-	return Citation_Text(*v)
-}
-
-func Citation_Text_Null() Citation_Text_Field {
-	return Citation_Text_Field{_set: true}
-}
-
-func (f Citation_Text_Field) isnull() bool { return !f._set || f._value == nil }
 
 func (f Citation_Text_Field) value() interface{} {
 	if !f._set {
@@ -887,6 +873,7 @@ func (h *__sqlbundle_Hole) Render() string { return h.SQL.Render() }
 
 func (obj *postgresImpl) Create_Citation(ctx context.Context,
 	citation_id Citation_Id_Field,
+	citation_text Citation_Text_Field,
 	optional Citation_Create_Fields) (
 	citation *Citation, err error) {
 
@@ -896,7 +883,7 @@ func (obj *postgresImpl) Create_Citation(ctx context.Context,
 	__id_val := citation_id.value()
 	__reference_val := optional.Reference.value()
 	__author_val := optional.Author.value()
-	__text_val := optional.Text.value()
+	__text_val := citation_text.value()
 	__book_val := optional.Book.value()
 	__hint_val := optional.Hint.value()
 	__year_val := optional.Year.value()
@@ -917,6 +904,7 @@ func (obj *postgresImpl) Create_Citation(ctx context.Context,
 
 func (obj *postgresImpl) CreateNoReturn_Citation(ctx context.Context,
 	citation_id Citation_Id_Field,
+	citation_text Citation_Text_Field,
 	optional Citation_Create_Fields) (
 	err error) {
 
@@ -926,7 +914,7 @@ func (obj *postgresImpl) CreateNoReturn_Citation(ctx context.Context,
 	__id_val := citation_id.value()
 	__reference_val := optional.Reference.value()
 	__author_val := optional.Author.value()
-	__text_val := optional.Text.value()
+	__text_val := citation_text.value()
 	__book_val := optional.Book.value()
 	__hint_val := optional.Hint.value()
 	__year_val := optional.Year.value()
@@ -1065,6 +1053,7 @@ func (obj *postgresImpl) deleteAll(ctx context.Context) (count int64, err error)
 
 func (obj *sqlite3Impl) Create_Citation(ctx context.Context,
 	citation_id Citation_Id_Field,
+	citation_text Citation_Text_Field,
 	optional Citation_Create_Fields) (
 	citation *Citation, err error) {
 
@@ -1074,7 +1063,7 @@ func (obj *sqlite3Impl) Create_Citation(ctx context.Context,
 	__id_val := citation_id.value()
 	__reference_val := optional.Reference.value()
 	__author_val := optional.Author.value()
-	__text_val := optional.Text.value()
+	__text_val := citation_text.value()
 	__book_val := optional.Book.value()
 	__hint_val := optional.Hint.value()
 	__year_val := optional.Year.value()
@@ -1098,6 +1087,7 @@ func (obj *sqlite3Impl) Create_Citation(ctx context.Context,
 
 func (obj *sqlite3Impl) CreateNoReturn_Citation(ctx context.Context,
 	citation_id Citation_Id_Field,
+	citation_text Citation_Text_Field,
 	optional Citation_Create_Fields) (
 	err error) {
 
@@ -1107,7 +1097,7 @@ func (obj *sqlite3Impl) CreateNoReturn_Citation(ctx context.Context,
 	__id_val := citation_id.value()
 	__reference_val := optional.Reference.value()
 	__author_val := optional.Author.value()
-	__text_val := optional.Text.value()
+	__text_val := citation_text.value()
 	__book_val := optional.Book.value()
 	__hint_val := optional.Hint.value()
 	__year_val := optional.Year.value()
@@ -1321,25 +1311,27 @@ func (rx *Rx) Rollback() (err error) {
 
 func (rx *Rx) CreateNoReturn_Citation(ctx context.Context,
 	citation_id Citation_Id_Field,
+	citation_text Citation_Text_Field,
 	optional Citation_Create_Fields) (
 	err error) {
 	var tx *Tx
 	if tx, err = rx.getTx(ctx); err != nil {
 		return
 	}
-	return tx.CreateNoReturn_Citation(ctx, citation_id, optional)
+	return tx.CreateNoReturn_Citation(ctx, citation_id, citation_text, optional)
 
 }
 
 func (rx *Rx) Create_Citation(ctx context.Context,
 	citation_id Citation_Id_Field,
+	citation_text Citation_Text_Field,
 	optional Citation_Create_Fields) (
 	citation *Citation, err error) {
 	var tx *Tx
 	if tx, err = rx.getTx(ctx); err != nil {
 		return
 	}
-	return tx.Create_Citation(ctx, citation_id, optional)
+	return tx.Create_Citation(ctx, citation_id, citation_text, optional)
 
 }
 
@@ -1367,11 +1359,13 @@ func (rx *Rx) Update_Citation_By_Id(ctx context.Context,
 type Methods interface {
 	CreateNoReturn_Citation(ctx context.Context,
 		citation_id Citation_Id_Field,
+		citation_text Citation_Text_Field,
 		optional Citation_Create_Fields) (
 		err error)
 
 	Create_Citation(ctx context.Context,
 		citation_id Citation_Id_Field,
+		citation_text Citation_Text_Field,
 		optional Citation_Create_Fields) (
 		citation *Citation, err error)
 

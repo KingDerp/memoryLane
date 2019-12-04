@@ -48,10 +48,10 @@ func (ss *CitationServer) NewCitation(ctx context.Context, req *CitationRequest)
 
 		return tx.CreateNoReturn_Citation(ctx,
 			database.Citation_Id(newId.String()),
+			database.Citation_Text(req.Text),
 			database.Citation_Create_Fields{
 				Reference: database.Citation_Reference(req.Reference),
 				Author:    database.Citation_Author(req.Author),
-				Text:      database.Citation_Text(req.Text),
 				Book:      database.Citation_Book(req.Book),
 				Hint:      database.Citation_Hint(req.Hint),
 				Year:      database.Citation_Year(req.Year),

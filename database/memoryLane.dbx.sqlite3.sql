@@ -7,7 +7,7 @@ CREATE TABLE citations (
 	id TEXT NOT NULL,
 	reference TEXT,
 	author TEXT,
-	text TEXT,
+	text TEXT NOT NULL,
 	book TEXT,
 	hint TEXT,
 	year INTEGER,

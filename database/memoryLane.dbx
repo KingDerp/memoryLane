@@ -10,7 +10,7 @@ model citation (
     field id                text
     field reference         text ( updatable, nullable )
     field author            text ( updatable, nullable )
-    field text              text ( updatable, nullable )
+    field text              text ( updatable )
     field book              text ( updatable, nullable )
     field hint              text ( updatable, nullable )
     field year              int64 ( updatable, nullable )
