@@ -3,7 +3,7 @@ package server
 import (
 	"context"
 
-	"github.com/KingDerp/memoryLane/common"
+	ml "github.com/KingDerp/memoryLane"
 	"github.com/KingDerp/memoryLane/database"
 
 	uuid "github.com/gofrs/uuid"
@@ -34,7 +34,7 @@ type NewCitationResponse struct {
 func (ss *CitationServer) NewCitation(ctx context.Context, req *CitationRequest) (err error) {
 
 	logrus.Info("entered citation server")
-	err = ValidateCitationRequest(req)
+	err = ValidateCitationReq(req)
 	if err != nil {
 		return err
 	}
@@ -60,15 +60,15 @@ func (ss *CitationServer) NewCitation(ctx context.Context, req *CitationRequest)
 	})
 
 	if err != nil {
-		return common.ServerError.Wrap(err)
+		return ml.ServerError.Wrap(err)
 	}
 
 	return nil
 }
 
-func ValidateCitationRequest(c *CitationRequest) error {
+func ValidateCitationReq(c *CitationRequest) error {
 	if c.Text == "" {
-		return common.ValidationError.New("text cannot be empty. You must have something to memorize.")
+		return ml.ValidationError.New("text cannot be empty. You must have something to memorize.")
 	}
 
 	return nil

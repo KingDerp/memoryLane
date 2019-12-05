@@ -4,7 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/KingDerp/memoryLane/common"
+	ml "github.com/KingDerp/memoryLane"
+
 	"github.com/stretchr/testify/require"
 )
 
@@ -20,22 +21,22 @@ func TestCitationMissingTextField(t *testing.T) {
 	s := newTest(t)
 	defer s.tearDown()
 
-	//set required field to zero val
+	//set required field set to zero val
 	c := defaultCitationRequest()
 	c.Text = ""
 
 	err := s.CitationServer.NewCitation(context.Background(), c)
-	require.True(t, common.ValidationError.Has(err))
+	require.True(t, ml.HasValidationError(err))
 }
 
 func TestValidateCitationRequestMissingText(t *testing.T) {
 	s := newTest(t)
 	defer s.tearDown()
 
-	//set required field to zero val
+	//set required field set to zero val
 	c := defaultCitationRequest()
 	c.Text = ""
 
-	err := ValidateCitationRequest(c)
+	err := ValidateCitationReq(c)
 	require.Error(t, err)
 }
