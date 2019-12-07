@@ -1,6 +1,7 @@
-package common
+package webutil
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/sirupsen/logrus"
@@ -10,8 +11,6 @@ import (
 var (
 	ServerError     = errs.Class("Server")
 	ValidationError = errs.Class("Validation")
-	MarshalError    = errs.Class("MarshalJSON")
-	UnmarshalError  = errs.Class("UnmarshalJSON")
 )
 
 func logServerError(err error) {
@@ -22,38 +21,12 @@ func logValidationError(err error) {
 	logrus.WithError(err).Warn("validation error")
 }
 
-func logMarshalError(err error) {
-	logrus.WithError(err).Warn("JSON decoding error")
-}
-
-func logUnmarshalError(err error) {
-	logrus.WithError(err).Warn("JSON encoding error")
-}
-
 func HasServerError(err error) bool {
 	return ServerError.Has(err)
 }
 
 func HasValidationError(err error) bool {
 	return ValidationError.Has(err)
-}
-
-func HasUnmarshalError(err error) bool {
-	return UnmarshalError.Has(err)
-}
-
-func HasMarshalError(err error) bool {
-	return MarshalError.Has(err)
-}
-
-func HandleMarshalError(w http.ResponseWriter, err error) {
-	logMarshalError(err)
-	http.Error(w, "json encoding error", statusFromError(err))
-}
-
-func HandleUnmarshalError(w http.ResponseWriter, err error) {
-	logUnmarshalError(err)
-	http.Error(w, "json decoding error", statusFromError(err))
 }
 
 func HandleServerError(w http.ResponseWriter, err error) {
@@ -71,7 +44,7 @@ func HandleDefaultError(w http.ResponseWriter, err error) {
 	http.Error(w, "unknown error", statusFromError(err))
 }
 
-func HandleCitationError(w http.ResponseWriter, err error) {
+func HandleError(w http.ResponseWriter, err error) {
 	switch {
 	case HasServerError(err):
 		HandleServerError(w, err)
@@ -92,13 +65,20 @@ func statusFromError(err error) int {
 	case HasValidationError(err):
 		return http.StatusBadRequest
 
-	case HasUnmarshalError(err):
-		return http.StatusBadRequest
-
-	case HasMarshalError(err):
-		return http.StatusInternalServerError
-
 	default:
 		return http.StatusInternalServerError
 	}
+}
+
+func RenderJSON(w http.ResponseWriter, obj interface{}) {
+	b, err := json.Marshal(obj)
+	if err != nil {
+		HandleError(w, err)
+		return
+	}
+
+	//set header
+	h := w.Header()
+	h.Set("Content-Type", "application/json")
+	w.Write(b)
 }

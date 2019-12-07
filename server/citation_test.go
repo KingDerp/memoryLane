@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	ml "github.com/KingDerp/memoryLane"
+	wu "github.com/KingDerp/memoryLane/webutil"
 
 	"github.com/stretchr/testify/require"
 )
@@ -26,7 +26,7 @@ func TestCitationMissingTextField(t *testing.T) {
 	c.Text = ""
 
 	err := s.CitationServer.NewCitation(context.Background(), c)
-	require.True(t, ml.HasValidationError(err))
+	require.True(t, wu.HasValidationError(err))
 }
 
 func TestValidateCitationRequestMissingText(t *testing.T) {

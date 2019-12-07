@@ -5,10 +5,8 @@ import (
 	"io"
 	"net/http"
 
-	ml "github.com/KingDerp/memoryLane"
 	"github.com/KingDerp/memoryLane/server"
-
-	"github.com/sirupsen/logrus"
+	wu "github.com/KingDerp/memoryLane/webutil"
 )
 
 type citationHandler struct {
@@ -23,46 +21,29 @@ func (ss *citationHandler) newCitation(w http.ResponseWriter, req *http.Request)
 
 	ctx := req.Context()
 
-	newCitationRequest, err := unmarshalCitationReq(req.Body)
+	newCitationRequest, err := decodeCitationReq(req.Body)
 	if err != nil {
-		ml.HandleUnmarshalError(w, err)
+		wu.HandleError(w, err)
 		return
 	}
 
 	err = ss.citationServer.NewCitation(ctx, newCitationRequest)
 	if err != nil {
-		ml.HandleCitationError(w, err)
+		wu.HandleError(w, err)
 		return
 	}
 
-	b, err := marshalCitationResp()
-	if err != nil {
-		ml.HandleMarshalError(w, err)
-		return
-	}
-
-	renderCitationResp(w, b)
+	wu.RenderJSON(w, &server.NewCitationResponse{
+		Message: "citation was succesfully received and stored",
+	})
 }
 
-func renderCitationResp(w http.ResponseWriter, b []byte) {
-	h := w.Header()
-	h.Set("Content-Type", "application/json")
-	w.Write(b)
-}
-
-func unmarshalCitationReq(io io.ReadCloser) (*server.CitationRequest, error) {
-	var c *server.CitationRequest
+func decodeCitationReq(io io.ReadCloser) (*server.CitationRequest, error) {
+	c := new(server.CitationRequest)
 
 	if err := json.NewDecoder(io).Decode(c); err != nil {
-		logrus.Errorf("error decoding request: %+v", err)
 		return nil, err
 	}
 
 	return c, nil
-}
-
-func marshalCitationResp() (b []byte, err error) {
-	return json.Marshal(&server.NewCitationResponse{
-		Message: "citation was succesfully received and stored",
-	})
 }

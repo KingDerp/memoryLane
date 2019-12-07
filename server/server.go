@@ -3,8 +3,8 @@ package server
 import (
 	"context"
 
-	ml "github.com/KingDerp/memoryLane"
 	"github.com/KingDerp/memoryLane/database"
+	wu "github.com/KingDerp/memoryLane/webutil"
 
 	uuid "github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -60,7 +60,7 @@ func (ss *CitationServer) NewCitation(ctx context.Context, req *CitationRequest)
 	})
 
 	if err != nil {
-		return ml.ServerError.Wrap(err)
+		return wu.ServerError.Wrap(err)
 	}
 
 	return nil
@@ -68,7 +68,7 @@ func (ss *CitationServer) NewCitation(ctx context.Context, req *CitationRequest)
 
 func ValidateCitationReq(c *CitationRequest) error {
 	if c.Text == "" {
-		return ml.ValidationError.New("text cannot be empty. You must have something to memorize.")
+		return wu.ValidationError.New("text cannot be empty. You must have something to memorize.")
 	}
 
 	return nil
