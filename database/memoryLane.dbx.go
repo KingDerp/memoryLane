@@ -872,6 +872,7 @@ func (h *__sqlbundle_Hole) Render() string { return h.SQL.Render() }
 //
 
 func (obj *postgresImpl) Create_Citation(ctx context.Context,
+	citation_mem_date Citation_MemDate_Field,
 	citation_id Citation_Id_Field,
 	citation_text Citation_Text_Field,
 	optional Citation_Create_Fields) (
@@ -879,7 +880,7 @@ func (obj *postgresImpl) Create_Citation(ctx context.Context,
 
 	__now := obj.db.Hooks.Now().UTC()
 	__created_at_val := __now
-	__mem_date_val := __now
+	__mem_date_val := citation_mem_date.value()
 	__id_val := citation_id.value()
 	__reference_val := optional.Reference.value()
 	__author_val := optional.Author.value()
@@ -903,6 +904,7 @@ func (obj *postgresImpl) Create_Citation(ctx context.Context,
 }
 
 func (obj *postgresImpl) CreateNoReturn_Citation(ctx context.Context,
+	citation_mem_date Citation_MemDate_Field,
 	citation_id Citation_Id_Field,
 	citation_text Citation_Text_Field,
 	optional Citation_Create_Fields) (
@@ -910,7 +912,7 @@ func (obj *postgresImpl) CreateNoReturn_Citation(ctx context.Context,
 
 	__now := obj.db.Hooks.Now().UTC()
 	__created_at_val := __now
-	__mem_date_val := __now
+	__mem_date_val := citation_mem_date.value()
 	__id_val := citation_id.value()
 	__reference_val := optional.Reference.value()
 	__author_val := optional.Author.value()
@@ -1052,6 +1054,7 @@ func (obj *postgresImpl) deleteAll(ctx context.Context) (count int64, err error)
 }
 
 func (obj *sqlite3Impl) Create_Citation(ctx context.Context,
+	citation_mem_date Citation_MemDate_Field,
 	citation_id Citation_Id_Field,
 	citation_text Citation_Text_Field,
 	optional Citation_Create_Fields) (
@@ -1059,7 +1062,7 @@ func (obj *sqlite3Impl) Create_Citation(ctx context.Context,
 
 	__now := obj.db.Hooks.Now().UTC()
 	__created_at_val := __now
-	__mem_date_val := __now
+	__mem_date_val := citation_mem_date.value()
 	__id_val := citation_id.value()
 	__reference_val := optional.Reference.value()
 	__author_val := optional.Author.value()
@@ -1086,6 +1089,7 @@ func (obj *sqlite3Impl) Create_Citation(ctx context.Context,
 }
 
 func (obj *sqlite3Impl) CreateNoReturn_Citation(ctx context.Context,
+	citation_mem_date Citation_MemDate_Field,
 	citation_id Citation_Id_Field,
 	citation_text Citation_Text_Field,
 	optional Citation_Create_Fields) (
@@ -1093,7 +1097,7 @@ func (obj *sqlite3Impl) CreateNoReturn_Citation(ctx context.Context,
 
 	__now := obj.db.Hooks.Now().UTC()
 	__created_at_val := __now
-	__mem_date_val := __now
+	__mem_date_val := citation_mem_date.value()
 	__id_val := citation_id.value()
 	__reference_val := optional.Reference.value()
 	__author_val := optional.Author.value()
@@ -1310,6 +1314,7 @@ func (rx *Rx) Rollback() (err error) {
 }
 
 func (rx *Rx) CreateNoReturn_Citation(ctx context.Context,
+	citation_mem_date Citation_MemDate_Field,
 	citation_id Citation_Id_Field,
 	citation_text Citation_Text_Field,
 	optional Citation_Create_Fields) (
@@ -1318,11 +1323,12 @@ func (rx *Rx) CreateNoReturn_Citation(ctx context.Context,
 	if tx, err = rx.getTx(ctx); err != nil {
 		return
 	}
-	return tx.CreateNoReturn_Citation(ctx, citation_id, citation_text, optional)
+	return tx.CreateNoReturn_Citation(ctx, citation_mem_date, citation_id, citation_text, optional)
 
 }
 
 func (rx *Rx) Create_Citation(ctx context.Context,
+	citation_mem_date Citation_MemDate_Field,
 	citation_id Citation_Id_Field,
 	citation_text Citation_Text_Field,
 	optional Citation_Create_Fields) (
@@ -1331,7 +1337,7 @@ func (rx *Rx) Create_Citation(ctx context.Context,
 	if tx, err = rx.getTx(ctx); err != nil {
 		return
 	}
-	return tx.Create_Citation(ctx, citation_id, citation_text, optional)
+	return tx.Create_Citation(ctx, citation_mem_date, citation_id, citation_text, optional)
 
 }
 
@@ -1358,12 +1364,14 @@ func (rx *Rx) Update_Citation_By_Id(ctx context.Context,
 
 type Methods interface {
 	CreateNoReturn_Citation(ctx context.Context,
+		citation_mem_date Citation_MemDate_Field,
 		citation_id Citation_Id_Field,
 		citation_text Citation_Text_Field,
 		optional Citation_Create_Fields) (
 		err error)
 
 	Create_Citation(ctx context.Context,
+		citation_mem_date Citation_MemDate_Field,
 		citation_id Citation_Id_Field,
 		citation_text Citation_Text_Field,
 		optional Citation_Create_Fields) (

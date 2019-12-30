@@ -35,14 +35,3 @@ func newTest(t *testing.T) *serverTest {
 func (h *serverTest) tearDown() {
 	require.NoError(h.t, h.db.Close())
 }
-
-func defaultCitationRequest() *CitationRequest {
-	return &CitationRequest{
-		Reference: "page 1 paragraph 1",
-		Author:    "Charel Dickens",
-		Text:      `It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness, it was the epoch of belief, it was the epoch of incredulity...`,
-		Book:      "A Tale of Two Cities",
-		Hint:      "Best and Worst",
-		Year:      2019,
-	}
-}

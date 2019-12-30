@@ -38,6 +38,18 @@ func (ss *citationHandler) newCitation(w http.ResponseWriter, req *http.Request)
 	})
 }
 
+func (ss *citationHandler) getDailyCitations(w http.ResponseWriter, req *http.Request) {
+	ctx := req.Context()
+
+	cts, err := ss.citationServer.GetDailyCitations(ctx, nil)
+	if err != nil {
+		wu.HandleError(w, err)
+		return
+	}
+
+	wu.RenderJSON(w, &cts)
+}
+
 func decodeCitationReq(io io.ReadCloser) (*server.CitationRequest, error) {
 	c := new(server.CitationRequest)
 

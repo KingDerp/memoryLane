@@ -2,11 +2,14 @@ package server
 
 import (
 	"context"
+	"database/sql"
+	"time"
 
 	"github.com/KingDerp/memoryLane/database"
 	wu "github.com/KingDerp/memoryLane/webutil"
 
 	uuid "github.com/gofrs/uuid"
+	"github.com/k0kubun/pp"
 	"github.com/sirupsen/logrus"
 )
 
@@ -27,13 +30,23 @@ type CitationRequest struct {
 	Year      int64  `json:"year"`
 }
 
+type CitationResponse struct {
+	Reference  string    `json:"reference"` //helps to locate item within a book. Ex: page number etc.
+	Author     string    `json:"author"`
+	Text       string    `json:"text"`
+	Book       string    `json:"book"`
+	Hint       string    `json:"hint"`
+	Year       int64     `json:"year"`
+	MemoryDate time.Time `json:"memoryDate"`
+}
+
 type NewCitationResponse struct {
 	Message string `json:"message"`
 }
 
 func (ss *CitationServer) NewCitation(ctx context.Context, req *CitationRequest) (err error) {
 
-	logrus.Info("entered citation server")
+	logrus.Info("Creating New Citation")
 	err = ValidateCitationReq(req)
 	if err != nil {
 		return err
@@ -47,6 +60,7 @@ func (ss *CitationServer) NewCitation(ctx context.Context, req *CitationRequest)
 	err = ss.db.WithTx(ctx, func(ctx context.Context, tx *database.Tx) error {
 
 		return tx.CreateNoReturn_Citation(ctx,
+			database.Citation_MemDate(time.Now()),
 			database.Citation_Id(newId.String()),
 			database.Citation_Text(req.Text),
 			database.Citation_Create_Fields{
@@ -64,6 +78,50 @@ func (ss *CitationServer) NewCitation(ctx context.Context, req *CitationRequest)
 	}
 
 	return nil
+}
+
+func (ss *CitationServer) GetDailyCitations(ctx context.Context, req *CitationRequest) (
+	c []CitationResponse, err error) {
+	logrus.Info("Getting today's citations")
+
+	rows, err := ss.db.GetDailyScriptures()
+	if err != nil {
+		return nil, wu.ServerError.Wrap(err)
+	}
+	defer rows.Close()
+
+	return rowsToCitationResponse(rows)
+}
+
+func rowsToCitationResponse(rows *sql.Rows) (c []CitationResponse, err error) {
+	var crs []CitationResponse
+	for rows.Next() {
+		var reference, author, text, book, hint string
+		var year int64
+		var memDate time.Time
+		err = rows.Scan(&reference, &author, &text, &book, &hint, &year, &memDate)
+		if err != nil {
+			return nil, wu.ServerError.Wrap(err)
+		}
+
+		crs = append(crs, CitationResponse{
+			Reference:  reference,
+			Author:     author,
+			Text:       text,
+			Book:       book,
+			Hint:       hint,
+			Year:       year,
+			MemoryDate: memDate,
+		})
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, wu.ServerError.Wrap(err)
+	}
+
+	pp.Print(crs)
+	return crs, err
 }
 
 func ValidateCitationReq(c *CitationRequest) error {

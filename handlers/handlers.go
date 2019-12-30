@@ -24,6 +24,7 @@ func NewHandler(db *database.DB) *Handler {
 	sh := newCitationHandler(ss)
 
 	r.Post("/api/citation/new", http.HandlerFunc(sh.newCitation))
+	r.Get("/api/citation/daily", http.HandlerFunc(sh.getDailyCitations))
 
 	return &Handler{Handler: r}
 }

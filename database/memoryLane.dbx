@@ -6,7 +6,7 @@ model citation (
 
     field pk                serial64
     field created_at        timestamp ( autoinsert )
-    field mem_date          timestamp ( autoinsert, updatable )
+    field mem_date          timestamp ( updatable )
     field id                text
     field reference         text ( updatable, nullable )
     field author            text ( updatable, nullable )
